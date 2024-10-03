@@ -1,0 +1,13 @@
+[project]
+authors = ["Erik Tollerud <erik.tollerud@gmail.com>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "python_experimentation"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+moderngl = ">=5.11.1,<6"
+numpy = ">=2.1.1,<3"

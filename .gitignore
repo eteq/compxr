@@ -18,6 +18,9 @@ Cargo.lock
 
 #python stuff
 
+# don't save the lock file by default for pixi, only if explicit override
+pixi.lock 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
