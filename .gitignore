@@ -48,3 +48,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+
+# Added by cargo
+
+/target
