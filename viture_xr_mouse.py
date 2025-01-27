@@ -1,8 +1,6 @@
 import time
 import subprocess
 import selectors
-from fcntl import fcntl, F_GETFL, F_SETFL
-from os import O_NONBLOCK
 
 class FailedReaderError(Exception):
     pass
@@ -10,8 +8,6 @@ class FailedReaderError(Exception):
 def main(execpath):
 
     process = subprocess.Popen(execpath, stdout=subprocess.PIPE)
-    # switch stdout to non-blocking mode so we can do processing while waiting
-    fcntl(process.stdout, F_SETFL, fcntl(process.stdout, F_GETFL) | O_NONBLOCK)
 
     # give it some time to initialize or fail
     time.sleep(1)
@@ -21,9 +17,6 @@ def main(execpath):
             raise FailedReaderError('viture device init failed')
         else:
             raise FailedReaderError(f'viture reader process failed with code {pollres}')
-
-    # switch stdout to non-blocking mode so we can do processing while waiting
-    #fcntl(p.stdout, F_SETFL, fcntl(process.stdout, F_GETFL) | O_NONBLOCK)
 
     # register a selector to check for input
     sel = selectors.DefaultSelector()
