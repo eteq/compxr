@@ -53,3 +53,7 @@ MANIFEST
 # Added by cargo
 
 /target
+
+*.o
+build
+viture_one_linux_sdk*
