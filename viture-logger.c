@@ -32,10 +32,32 @@ static void mcuCallback(uint16_t msgid, uint8_t *data, uint16_t len, uint32_t ts
 // no op
 }
 
+
+void testing_loop() {
+    // simulated output
+
+    uint8_t data[16];
+    
+    srand(time(NULL)); 
+    while (1) {
+        for (int i = 0; i < 16; i++) { data[i] = rand()%255; }
+
+        printf("start");
+        fwrite(data, 1, 4*4 , stdout);
+        printf("\n");
+        fflush(stdout);
+
+        sleep(1/60.);
+    }
+}
+
+
 int main() {
+    //testing_loop();  // uncomment for testing without a device handy
+
     bool init_result = init(imuCallback, mcuCallback);
     if (init_result == false) {
-        exit(52); // failure for failed init cause
+        exit(52); // failure for failed init cause        
     }
     set_imu(true);
 
@@ -75,3 +97,4 @@ int main() {
     //deinit(); //for some reason it hangs here??
     return 0;
 }
+
