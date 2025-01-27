@@ -37,6 +37,9 @@ void testing_loop() {
     // simulated output
 
     uint8_t data[16];
+
+    struct timespec sixtyhz = {0, 16666666};
+    struct timespec onetwentyhz = {0, 8333333};
     
     srand(time(NULL)); 
     while (1) {
@@ -47,13 +50,13 @@ void testing_loop() {
         printf("\n");
         fflush(stdout);
 
-        sleep(1/60.);
+        nanosleep(&sixtyhz, NULL);
     }
 }
 
 
 int main() {
-    //testing_loop();  // uncomment for testing without a device handy
+    testing_loop();  // uncomment for testing without a device handy
 
     bool init_result = init(imuCallback, mcuCallback);
     if (init_result == false) {

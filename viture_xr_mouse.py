@@ -1,6 +1,8 @@
 import time
 import subprocess
 import selectors
+from fcntl import fcntl, F_GETFL, F_SETFL
+from os import O_NONBLOCK
 
 class FailedReaderError(Exception):
     pass
@@ -8,6 +10,8 @@ class FailedReaderError(Exception):
 def main(execpath):
 
     process = subprocess.Popen(execpath, stdout=subprocess.PIPE)
+    # switch stdout to non-blocking mode so we can do processing while waiting
+    fcntl(process.stdout, F_SETFL, fcntl(process.stdout, F_GETFL) | O_NONBLOCK)
 
     # give it some time to initialize or fail
     time.sleep(1)
@@ -26,12 +30,15 @@ def main(execpath):
     sel.register(process.stdout, selectors.EVENT_READ)
 
     lastread = time.time()
+    i = 0
     while True:
-        for key, _ in sel.select():
+        i += 1
+        for key, _ in sel.select(timeout=0):
             line = key.fileobj.readline()
             nowread = time.time()
-            print('read line with length', len(line), 'delay', nowread - lastread)
+            print('read line with length', len(line), 'w/ delay', (nowread - lastread)*1e3, 'ms, loop runs', i)
             lastread = nowread
+            i = 0
 
 if __name__ == '__main__':
     import argparse
