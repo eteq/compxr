@@ -1,23 +1,37 @@
-import numpy as np
-
+import pathlib
 import time
 import subprocess
 import selectors
 
+import numpy as np
+
+
 class FailedReaderError(Exception):
     pass
 
+class QuaternionHistory:
+    def __init__(self, history_size=20, dtype=np.float32):
+        self.buffer = np.zeros((history_size, 4), dtype=dtype)
+        self.current_index = -1
+        self.filled_once = False
 
-def process_line(line):
-    # wb = line[5:9]
-    # xb = line[9:13]
-    # yb = line[13:17]
-    # zb = line[17:21]
-    buffer_wxyz = line[5:21]
-    wxyz = np.frombuffer(buffer_wxyz, dtype=np.float32)
-    print(wxyz)
+    def process_line(self, line):
+        bytes_wxyz = line[5:21]
+        wxyz = np.frombuffer(bytes_wxyz, dtype=self.buffer.dtype)
+        self.current_index = (self.current_index + 1) % self.buffer.shape[0]
+        self.buffer[self.current_index] = wxyz
+        if (self.current_index + 1) == self.buffer.shape[0]:
+            self.filled_once = True
 
-def main(execpath, nignore_initial):
+    def get_ordered_history(self):
+        """
+        yields the quaternion set (wxyz) with the most recent at the end of the array
+        """
+        return np.roll(self.buffer, (self.buffer.shape[0]-1)-self.current_index, axis=0)
+    
+
+def main(execpath, nignore_initial, nhistory, dump):
+    quats = QuaternionHistory(history_size=nhistory)
 
     process = subprocess.Popen(execpath, stdout=subprocess.PIPE)
 
@@ -55,8 +69,17 @@ def main(execpath, nignore_initial):
                     if completed_lines <= nignore_initial:
                         fulline = b''
                         continue
-                    process_line(fulline)
-                    print('loops overhead:', loops_since_last_processing)
+
+                    quats.process_line(fulline)
+                    if quats.filled_once:
+                        if dump is not None:
+                            np.savetxt(dump, quats.get_ordered_history(), delimiter=',')
+                            print('dumped', quats.buffer.shape[0], f'quaternions to {dump}, exiting.')
+                            return
+                        else:
+                            raise NotImplementedError()
+
+                    #$print('loops overhead:', loops_since_last_processing) # DEBUG: use this to monitor how much time is free
                     if loops_since_last_processing == 0:
                         nzeros += 1
                     else:
@@ -69,6 +92,7 @@ def main(execpath, nignore_initial):
                 print('line overflowed!')
                 fulline = b''
         loops_since_last_processing += 1
+        time.sleep(0.001) # this really shouldn't be necessary with select but for some reason it's not sleeping up there?
 
 
 if __name__ == '__main__':
@@ -77,7 +101,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--execpath', default='build/viture-logger')
     parser.add_argument('--nignore-initial', default=120, type=int)
+    parser.add_argument('--nhistory', default=20, type=int)
+    parser.add_argument('--dump', default=pathlib.Path('.'), type=pathlib.Path)
 
     args = parser.parse_args()
+    if str(args.dump) == '.':
+        args.dump = None
 
-    main(args.execpath, args.nignore_initial)
+    main(args.execpath, args.nignore_initial, args.nhistory, args.dump)

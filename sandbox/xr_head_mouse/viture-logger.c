@@ -56,7 +56,7 @@ void testing_loop() {
 
 
 int main() {
-    testing_loop();  // uncomment for testing without a device handy
+    //testing_loop();  // uncomment for testing without a device handy
 
     bool init_result = init(imuCallback, mcuCallback);
     if (init_result == false) {
