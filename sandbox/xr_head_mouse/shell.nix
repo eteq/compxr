@@ -9,4 +9,9 @@ pkgs.mkShell {
       python-uinput
     ]))
   ];
+
+
+  shellHook = ''
+    export LD_LIBRARY_PATH=$HOME/src/viture_one_linux_sdk_1.0.7/libs
+  '';
 }

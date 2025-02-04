@@ -141,15 +141,17 @@ def main(execpath, nignore_initial, nhistory, dump, print_basis, sensitivity, de
 if __name__ == '__main__':
     import argparse
 
+    fpth = pathlib.Path(__file__).parent
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--execpath', default='build/viture-logger')
+    parser.add_argument('--execpath', default=fpth / 'build/viture-logger')
     parser.add_argument('--nignore-initial', default=120, type=int)
     parser.add_argument('--nhistory', default=20, type=int)
     parser.add_argument('--dump', default=pathlib.Path('.'), type=pathlib.Path)
     parser.add_argument('--print-basis', default=0, type=int)
-    parser.add_argument('-x', '--sensitivity-x', default=1, type=float)
-    parser.add_argument('-y', '--sensitivity-y', default=1, type=float)
-    parser.add_argument('-d', '--dead-zone', default=0, type=float)
+    parser.add_argument('-x', '--sensitivity-x', default=20, type=float)
+    parser.add_argument('-y', '--sensitivity-y', default=15, type=float)
+    parser.add_argument('-d', '--dead-zone', default=2.5, type=float)
 
     args = parser.parse_args()
     if str(args.dump) == '.':
